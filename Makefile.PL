@@ -1,18 +1,16 @@
-use strict;
-use warnings;
-use ExtUtils::MakeMaker;
+#!/usr/bin/perl
+use inc::Module::Install;
+use 5.008;
+name        ('Business-TW-TSIB-CStorePayment');
+author      ('Chia-liang Kao <clkao@aiink.com>');
+license     ('perl');
+all_from    ('lib/Business/TW/TSIB/CStorePayment.pm');
 
-WriteMakefile(
-    NAME          => 'Business::TW::TSIB::CStorePayment',
-    AUTHOR        => 'You-An Lin <c9s@aiink.com>',
-    VERSION_FROM  => 'lib/Business/TW/TSIB/CStorePayment.pm',
-    ABSTRACT_FROM => 'lib/Business/TW/TSIB/CStorePayment.pm',
-    PL_FILES      => {},
-    PREREQ_PM     => {
-        'Test::More'      => 0,
-        'Class::Accessor' => 0,
-        'List::MoreUtils' => 0,
-    },
-    dist => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
-    clean => { FILES => 'Business-TW-TSIB-CStorePayment-*' },
-);
+
+requires    ('Test::More');
+requires    ('Class::Accessor::Fast');
+requires    ('List::MoreUtils');
+requires    ('DateTime');
+
+auto_install;
+WriteAll;

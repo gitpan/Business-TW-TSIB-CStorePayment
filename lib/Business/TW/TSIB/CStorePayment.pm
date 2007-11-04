@@ -2,6 +2,7 @@ package Business::TW::TSIB::CStorePayment;
 
 use warnings;
 use strict;
+use DateTime;
 
 =head1 NAME
 
@@ -9,7 +10,7 @@ Business::TW::TSIB::CStorePayment - Module for Taishin Bank Convenient Store Pay
 
 =cut
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 =head1 SYNOPSIS
 
