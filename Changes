@@ -1,5 +1,9 @@
 Revision history for Business-TW-TSIB-CStorePayment
 
+0.03    Jan 6 2008
+        Fix checksum.
+        Parse summary file.
+
 0.02    Nov 4 2007
         Fix dependency: require DateTime.
 

@@ -2,6 +2,7 @@ package Business::TW::TSIB::CStorePayment;
 
 use warnings;
 use strict;
+use Business::TW::TSIB::CStorePayment::Entry;
 use DateTime;
 
 =head1 NAME
@@ -10,7 +11,7 @@ Business::TW::TSIB::CStorePayment - Module for Taishin Bank Convenient Store Pay
 
 =cut
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 =head1 SYNOPSIS
 
@@ -24,7 +25,7 @@ our $VERSION = '0.02';
     # render the code39 barcode with GD::Barcode
     my @png = map { GD::Barcode::Code39->new("*$_*")->plot->png } @bar;
 
-    # not yet
+    # parse summary from file handler
     my $entries = Business::TW::TSIB::CStorePayment->parse_summary($fh);
 
     # entries is arrayref of Business::TW::TSIB::CStorePayment::Entry objects,
@@ -106,17 +107,71 @@ sub _compute_checksum {
     my $self = shift;
     my (@bar) = apply { tr/A-Z/1-91-92-9/ }@_;
     my $str = $bar[0].'0'.$bar[1].$bar[2];
-
     my $i = 0;
-    my %fixup = ( 0 => 'X', '10' => 'Y' );
-    return join('', map { $fixup{$_} || $_ } map { (sum @$_) % 11 } part { $i++ % 2 } split //, $str);
+    my @sum = map { (sum @$_) % 11 } part { $i++ % 2 } split //, $str;
+    $sum[0] = { 0 => 'A', '10' => 'B' } -> { $sum[0] } || $sum[0];
+    $sum[1] = { 0 => 'X', '10' => 'Y' } -> { $sum[1] } || $sum[1];
+    return join('', @sum);
 }
 
 =head2 $self->parse_summary($fh)
 
+Parse CStore Payment file
+
 =cut
 
 sub parse_summary {
+    my $self = shift;
+    my $fh   = shift;
+
+    # format:
+
+    # debit date (8)  
+    # paid date (8)  
+    # payment id (16)  
+    # amount (9) 
+    # due (4)  
+    # collection agent (8)  
+    # payee account (14) 
+
+
+    my @entries;
+    while (<$fh>) {
+        chomp;
+        next unless length $_;
+        my %cols;
+
+        @cols{
+            qw/
+                debit_date
+                paid_date
+                payment_id
+                amount
+                due
+                collection_agent
+                payee_account/
+            }
+            = (
+            m/
+            (.{8})  # debit date
+            (.{8})  # paid date  
+            (.{16}) # payment id
+            (.{9})  # amount
+            (.{4})  # due  
+            (.{8})  # collection agent  
+            (.{14}) # payee account
+            /x
+            );
+
+        # trim
+        map { $cols{$_} =~ s/\s*$//g; $cols{$_} =~ s/^\s*//g; } keys %cols;
+
+        $cols{amount} = int($cols{amount});
+
+        my $entry = Business::TW::TSIB::CStorePayment::Entry->new( \%cols );
+        push @entries, $entry;
+    }
+    return \@entries;
 }
 
 =head1 AUTHOR
