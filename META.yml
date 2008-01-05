@@ -18,4 +18,4 @@ requires:
   DateTime: 0
   List::MoreUtils: 0
   Test::More: 0
-version: 0.03
+version: 0.04
